@@ -5,9 +5,9 @@ import { computed } from 'vue';
 const props = defineProps<{ href: string }>();
 
 /**
- * Cross-origin targets (main <-> panel <-> admin subdomains) must use plain
- * browser navigation; Inertia's <Link> can only perform same-origin XHR
- * visits and fails with a network error otherwise.
+ * Non same-origin targets (e.g. external links) must use plain browser
+ * navigation; Inertia's <Link> can only perform same-origin XHR visits
+ * and fails with a network error otherwise.
  */
 const isSameOrigin = computed((): boolean => {
     try {

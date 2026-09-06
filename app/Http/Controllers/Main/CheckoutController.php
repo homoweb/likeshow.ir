@@ -81,11 +81,10 @@ class CheckoutController extends Controller
                 'برای تکمیل خرید ابتدا وارد حساب کاربری خود شوید.',
             );
 
-            // The frontend posts this form via Inertia (XHR), so a plain 302
-            // to the panel domain would be blocked as cross-origin by the
-            // browser. Inertia::location answers with 409 + X-Inertia-Location
-            // (a full client-side page visit) for Inertia requests and falls
-            // back to a regular redirect otherwise.
+            // The frontend posts this form via Inertia (XHR). Inertia::location
+            // answers with 409 + X-Inertia-Location (a full client-side page
+            // visit to the panel login) for Inertia requests and falls back
+            // to a regular redirect otherwise.
             return Inertia::location(route('panel.login'));
         }
 

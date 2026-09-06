@@ -7,40 +7,42 @@ use Illuminate\Support\Env;
 | LikeShow Application Configuration
 |--------------------------------------------------------------------------
 |
-| Domain routing and business constants of the platform. Domains are read
-| from the environment so local (.test) and production (.ir) environments
-| can be switched without touching the code.
+| Routing paths and business constants of the platform. The application is
+| served from a single domain: the main site at /, the user panel under
+| /panel and the admin panel under /admin. Values are read from the
+| environment so local (.test) and production (.ir) environments can be
+| switched without touching the code.
 |
 */
 
 $scheme = Env::get('LS_SCHEME', 'https');
 $mainDomain = Env::get('LS_MAIN_DOMAIN', 'likeshow.test');
-$panelDomain = Env::get('LS_PANEL_DOMAIN', 'panel.likeshow.test');
-$adminDomain = Env::get('LS_ADMIN_DOMAIN', 'admin.likeshow.test');
+$panelPrefix = Env::get('LS_PANEL_PREFIX', 'panel');
+$adminPrefix = Env::get('LS_ADMIN_PREFIX', 'admin');
 
 return [
 
     /*
     |--------------------------------------------------------------------------
-    | Domains
+    | Routing
     |--------------------------------------------------------------------------
     */
 
     'scheme' => $scheme,
 
     'main_domain' => $mainDomain,
-    'panel_domain' => $panelDomain,
-    'admin_domain' => $adminDomain,
+    'panel_prefix' => $panelPrefix,
+    'admin_prefix' => $adminPrefix,
 
     /*
     |--------------------------------------------------------------------------
-    | Absolute base URLs (used for cross-domain redirects and callbacks)
+    | Absolute base URLs (used for cross-section redirects and callbacks)
     |--------------------------------------------------------------------------
     */
 
     'main_url' => Env::get('LS_MAIN_URL', "$scheme://$mainDomain"),
-    'panel_url' => Env::get('LS_PANEL_URL', "$scheme://$panelDomain"),
-    'admin_url' => Env::get('LS_ADMIN_URL', "$scheme://$adminDomain"),
+    'panel_url' => Env::get('LS_PANEL_URL', "$scheme://$mainDomain/$panelPrefix"),
+    'admin_url' => Env::get('LS_ADMIN_URL', "$scheme://$mainDomain/$adminPrefix"),
 
     /*
     |--------------------------------------------------------------------------

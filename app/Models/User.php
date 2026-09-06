@@ -47,7 +47,7 @@ class User extends Authenticatable
 
     /**
      * Persist a checkout draft (product + quantity + target) in the session
-     * so it survives the login round-trip across subdomains.
+     * so it survives the login round-trip.
      *
      * @param  array<string, mixed>  $payload
      */

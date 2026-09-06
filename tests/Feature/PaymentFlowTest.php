@@ -7,7 +7,6 @@ use App\Models\User;
 
 beforeEach(function () {
     config(['payment.default' => 'local']);
-    config(['session.domain' => '.likeshow.test']);
 });
 
 test('an order is fulfilled through the local gateway', function () {

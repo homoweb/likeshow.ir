@@ -22,7 +22,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Authenticate an administrator on the admin domain.
+     * Authenticate an administrator.
      */
     public function login(Request $request): RedirectResponse
     {

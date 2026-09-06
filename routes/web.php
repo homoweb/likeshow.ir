@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 | Main site — likeshow.test
 |--------------------------------------------------------------------------
 */
-Route::domain(config('likeshow.main_domain'))->name('main.')->group(function (): void {
+Route::name('main.')->group(function (): void {
     Route::get('/', [LandingController::class, 'index'])->name('home');
 
     Route::get('/checkout/{product}', [CheckoutController::class, 'show'])
@@ -33,8 +33,8 @@ Route::domain(config('likeshow.main_domain'))->name('main.')->group(function ():
     Route::get('/payment/result/{order}', [PaymentController::class, 'result'])
         ->name('payment.result');
 
-    // The session cookie is shared across all subdomains, so logout must be
-    // available same-origin on every domain (no cross-origin XHR / CORS).
+    // Logout must be reachable from the main site as well, so users on any
+    // page of the app can end their session with a same-origin request.
     Route::post('/logout', [PanelAuthController::class, 'logout'])
         ->middleware('auth')
         ->name('logout');
@@ -42,7 +42,7 @@ Route::domain(config('likeshow.main_domain'))->name('main.')->group(function ():
 
 /*
 |--------------------------------------------------------------------------
-| Payment gateway callback — shared host, no subdomain prefix
+| Payment gateway callback — shared host, outside the section prefixes
 |--------------------------------------------------------------------------
 */
 Route::any('/payment/callback', [PaymentController::class, 'callback'])
@@ -50,10 +50,10 @@ Route::any('/payment/callback', [PaymentController::class, 'callback'])
 
 /*
 |--------------------------------------------------------------------------
-| User panel — panel.likeshow.test
+| User panel — /panel
 |--------------------------------------------------------------------------
 */
-Route::domain(config('likeshow.panel_domain'))->name('panel.')->group(function (): void {
+Route::prefix('panel')->name('panel.')->group(function (): void {
     Route::middleware('guest')->group(function (): void {
         Route::get('/login', [PanelAuthController::class, 'showLogin'])->name('login');
         Route::post('/login', [PanelAuthController::class, 'login']);
@@ -74,10 +74,10 @@ Route::domain(config('likeshow.panel_domain'))->name('panel.')->group(function (
 
 /*
 |--------------------------------------------------------------------------
-| Admin panel — admin.likeshow.test
+| Admin panel — /admin
 |--------------------------------------------------------------------------
 */
-Route::domain(config('likeshow.admin_domain'))->name('admin.')->group(function (): void {
+Route::prefix('admin')->name('admin.')->group(function (): void {
     Route::middleware('guest')->group(function (): void {
         Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('login');
         Route::post('/login', [AdminAuthController::class, 'login']);

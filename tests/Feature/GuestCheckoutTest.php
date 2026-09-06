@@ -7,9 +7,7 @@ use Database\Seeders\PermissionSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
-    // Allow the session cookie to flow between the three subdomains and
-    // pin the configured main URL scheme for deterministic assertions.
-    config(['session.domain' => '.likeshow.test']);
+    // Pin the configured main URL scheme for deterministic assertions.
     config(['likeshow.main_url' => 'https://likeshow.test']);
 });
 
@@ -21,20 +19,20 @@ test('guest checkout stores a draft and redirects to the panel login', function 
         'target_username' => 'my_page',
     ]);
 
-    $response->assertRedirect('https://panel.likeshow.test/login');
+    $response->assertRedirect('https://likeshow.test/panel/login');
     $response->assertSessionHas('checkout_draft');
     $response->assertSessionHas('info');
 
     expect(Order::query()->count())->toBe(0);
 });
 
-test('guest checkout answers inertia requests with x-inertia-location instead of a cross-origin 302', function () {
+test('guest checkout answers inertia requests with x-inertia-location instead of a plain 302', function () {
     $product = Product::factory()->followers()->withTiers()->create();
 
-    // The frontend posts the checkout form via Inertia (XHR). A 302 to the
-    // panel domain would be blocked by the browser as CORS, so the response
-    // must instead carry 409 + X-Inertia-Location (a full client-side
-    // page visit to the panel login).
+    // The frontend posts the checkout form via Inertia (XHR). A redirect on
+    // that request must reach the client as 409 + X-Inertia-Location so it
+    // performs a full page visit to the panel login instead of a fragile
+    // XHR redirect hop.
     $response = $this->post('https://likeshow.test/checkout/'.$product->id, [
         'quantity' => 5000,
         'target_username' => 'my_page',
@@ -42,7 +40,7 @@ test('guest checkout answers inertia requests with x-inertia-location instead of
 
     $response->assertStatus(409);
     expect($response->headers->get('X-Inertia-Location'))
-        ->toBe('https://panel.likeshow.test/login');
+        ->toBe('https://likeshow.test/panel/login');
 
     $response->assertSessionHas('checkout_draft');
     $response->assertSessionHas('info');
@@ -60,7 +58,7 @@ test('guest checkout resumes after registering on the panel', function () {
         'target_username' => 'my_page',
     ]);
 
-    $response = $this->post('https://panel.likeshow.test/register', [
+    $response = $this->post('https://likeshow.test/panel/register', [
         'name' => 'علی رضایی',
         'email' => 'ali@example.com',
         'password' => 'password123',
@@ -98,10 +96,10 @@ test('login resumes a draft for inertia requests via x-inertia-location instead 
         'target_username' => 'another_page',
     ]);
 
-    // The panel login form posts via Inertia (XHR). Redirecting that XHR to
-    // the main domain would be blocked as CORS; the client must perform a
-    // full page visit via 409 + X-Inertia-Location instead.
-    $response = $this->post('https://panel.likeshow.test/login', [
+    // The panel login form posts via Inertia (XHR). The draft resume must
+    // be a full page visit, so the response carries 409 + X-Inertia-Location
+    // instead of a plain redirect.
+    $response = $this->post('https://likeshow.test/panel/login', [
         'email' => $user->email,
         'password' => 'password',
     ], ['X-Inertia' => 'true']);
@@ -111,20 +109,20 @@ test('login resumes a draft for inertia requests via x-inertia-location instead 
         ->toBe('https://likeshow.test/order/resume');
 });
 
-test('login ignores cross-origin intended urls to keep the response same-origin', function () {
+test('login ignores intended urls outside the panel', function () {
     $user = User::factory()->create();
 
     // Simulate a stale intended URL left behind by an earlier guest redirect
-    // from the main site; following it would make the XHR response a blocked
-    // cross-origin redirect.
+    // on the main site; it points outside the panel, so the login response
+    // must ignore it and land on the panel orders list.
     session(['url.intended' => 'https://likeshow.test/checkout/1']);
 
-    $response = $this->post('https://panel.likeshow.test/login', [
+    $response = $this->post('https://likeshow.test/panel/login', [
         'email' => $user->email,
         'password' => 'password',
     ], ['X-Inertia' => 'true']);
 
-    $response->assertRedirect('https://panel.likeshow.test/orders');
+    $response->assertRedirect('https://likeshow.test/panel/orders');
 });
 
 test('guest checkout resumes after logging in on the panel', function () {
@@ -136,7 +134,7 @@ test('guest checkout resumes after logging in on the panel', function () {
         'target_username' => 'another_page',
     ]);
 
-    $response = $this->post('https://panel.likeshow.test/login', [
+    $response = $this->post('https://likeshow.test/panel/login', [
         'email' => $user->email,
         'password' => 'password',
     ]);

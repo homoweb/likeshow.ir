@@ -31,7 +31,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Authenticate a user on the panel domain.
+     * Authenticate a user on the panel.
      */
     public function login(Request $request): SymfonyResponse
     {
@@ -61,16 +61,15 @@ class AuthController extends Controller
         $draft = $request->session()->get('checkout_draft');
 
         if (is_array($draft) && isset($draft['product_id'])) {
-            // The login form posts via Inertia (XHR), so a plain 302 "away" to
-            // the main domain would be blocked as cross-origin by the browser.
-            // Inertia::location answers with 409 + X-Inertia-Location (a full
-            // client-side page visit) for Inertia requests.
+            // The login form posts via Inertia (XHR). Inertia::location
+            // answers with 409 + X-Inertia-Location, which the client turns
+            // into a full page visit to the resume URL.
             return Inertia::location(route('main.checkout.resume'));
         }
 
-        // Only honor same-origin intended URLs. A stale cross-origin intended
-        // URL (stored before a guest redirect on the main site) would turn
-        // this XHR response into a blocked cross-origin redirect.
+        // Only honor intended URLs that live inside the panel. A stale
+        // intended URL (stored before a guest redirect on the main site)
+        // would otherwise send the user somewhere unexpected.
         $intended = $request->session()->pull('url.intended');
 
         if (is_string($intended) && str_starts_with($intended, config('likeshow.panel_url').'/')) {
@@ -113,8 +112,8 @@ class AuthController extends Controller
         $draft = $request->session()->get('checkout_draft');
 
         if (is_array($draft) && isset($draft['product_id'])) {
-            // See login(): cross-domain redirects after the XHR register call
-            // must go through Inertia::location.
+            // See login(): after the XHR register call the resume URL is
+            // reached through a full page visit via Inertia::location.
             return Inertia::location(route('main.checkout.resume'));
         }
 

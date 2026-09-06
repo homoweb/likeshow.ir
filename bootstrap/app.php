@@ -30,29 +30,32 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => RoleOrPermissionMiddleware::class,
         ]);
 
-        // Send "guest" and "auth" redirects to the right subdomain. Every
-        // redirect must stay same-origin with the requesting host: a
-        // cross-origin 302 on an Inertia (XHR) request is blocked by the
-        // browser as CORS. Cross-domain hops happen only through full-page
-        // navigations (links or Inertia::location responses).
+        // Send "guest" and "auth" redirects to the right section. Main, panel
+        // and admin share one host, so every redirect is same-origin by
+        // construction and is chosen by the request's path prefix.
         $middleware->redirectGuestsTo(function (Request $request) {
-            $host = (string) $request->getHost();
+            $adminPrefix = (string) config('likeshow.admin_prefix');
+            $panelPrefix = (string) config('likeshow.panel_prefix');
 
-            if (str_starts_with($host, 'admin.')) {
+            if ($request->is($adminPrefix, "$adminPrefix/*")) {
                 return route('admin.login');
             }
 
-            if (str_starts_with($host, 'panel.')) {
+            if ($request->is($panelPrefix, "$panelPrefix/*")) {
                 return route('panel.login');
             }
 
             // The main site has no login page of its own; keep its guest
-            // redirects same-origin instead of bouncing XHRs to the panel.
+            // redirects on the landing page instead of bouncing XHRs to the
+            // panel.
             return route('main.home');
         });
 
         $middleware->redirectUsersTo(
-            fn (Request $request) => str_starts_with((string) $request->getHost(), 'admin.')
+            fn (Request $request) => $request->is(
+                (string) config('likeshow.admin_prefix'),
+                (string) config('likeshow.admin_prefix').'/*',
+            )
                 ? route('admin.users.index')
                 : route('panel.orders.index'),
         );

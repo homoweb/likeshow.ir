@@ -22,9 +22,9 @@ const shared = computed(() => page.props as unknown as SharedProps);
 const user = computed(() => shared.value.auth.user);
 const urls = computed(() => shared.value.urls);
 
-// Logout must always be same-origin: the session cookie is shared across
-// subdomains, so logging out from the current domain ends the session
-// everywhere. Cross-origin POSTs (e.g. main → panel) are blocked by CORS.
+// Logout posts to the current section's own logout route, so the request
+// always stays same-origin (main → main.logout, panel → panel.logout,
+// admin → admin.logout).
 const logoutUrl = computed(() => {
     if (props.kind === 'admin') {
         return adminRoutes.logout.url();
