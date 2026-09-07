@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import AppLink from '@/components/AppLink.vue';
 import AppSpinner from '@/components/AppSpinner.vue';
@@ -80,6 +80,29 @@ const dismiss = (key: string): void => {
 };
 
 const year = computed(() => toFa(new Date().getFullYear()));
+
+// eNAMAD's logo endpoint only serves the seal image to the exact registered
+// domain and keeps returning 403 for a while after the seal is issued. Show a
+// bundled one-star seal (this shop's current rating) and swap in the official
+// logo once it loads; the official anchor markup stays for eNAMAD's crawler.
+const ENAMAD_OFFICIAL_LOGO =
+    'https://trustseal.enamad.ir/logo.aspx?id=7617460&Code=hF5UEFjsxxRidiFDQgRZo2WXOmUFlyvF';
+const ENAMAD_FALLBACK_LOGO = '/images/enamad/logo.png';
+const enamadSealSrc = ref(ENAMAD_FALLBACK_LOGO);
+
+onMounted(() => {
+    enamadSealSrc.value = ENAMAD_OFFICIAL_LOGO;
+});
+
+const onEnamadSealError = (event: Event) => {
+    const img = event.target as HTMLImageElement;
+
+    if (img.src.includes('trustseal.enamad.ir')) {
+        enamadSealSrc.value = ENAMAD_FALLBACK_LOGO;
+    } else {
+        img.style.display = 'none';
+    }
+};
 
 // Landing/main pages use a narrower centered container so the content never
 // feels full-bleed; panel/admin keep a wider shell for data tables.
@@ -383,10 +406,10 @@ const isActiveAdminNav = (href: string): boolean => {
                     class="mt-10 flex flex-col items-center justify-between gap-6 border-t border-white/5 pt-6 text-xs text-slate-500 md:flex-row"
                 >
                     <div>© {{ year }} لایک شو — تمامی حقوق محفوظ است.</div>
-                    <!-- Official eNAMAD snippet (kept verbatim for eNAMAD's crawler).
-                         Hidden on load failure until the seal is issued for this domain,
-                         so visitors don't see a broken-image icon. -->
-                    <a referrerpolicy='origin' target='_blank' href='https://trustseal.enamad.ir/?id=7617460&Code=hF5UEFjsxxRidiFDQgRZo2WXOmUFlyvF'><img referrerpolicy='origin' src='https://trustseal.enamad.ir/logo.aspx?id=7617460&Code=hF5UEFjsxxRidiFDQgRZo2WXOmUFlyvF' alt='' style='cursor:pointer' code='hF5UEFjsxxRidiFDQgRZo2WXOmUFlyvF' @error='($event.target as HTMLImageElement).style.display = "none"'></a>
+                    <!-- Official eNAMAD anchor (kept verbatim for eNAMAD's crawler).
+                         The img falls back to a bundled one-star seal while
+                         trustseal.enamad.ir still 403s for this domain. -->
+                    <a referrerpolicy='origin' target='_blank' href='https://trustseal.enamad.ir/?id=7617460&Code=hF5UEFjsxxRidiFDQgRZo2WXOmUFlyvF'><img referrerpolicy='origin' :src='enamadSealSrc' alt='' style='cursor:pointer' code='hF5UEFjsxxRidiFDQgRZo2WXOmUFlyvF' @error='onEnamadSealError'></a>
                 </div>
             </div>
         </footer>
