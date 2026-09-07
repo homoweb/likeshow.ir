@@ -1,6 +1,6 @@
 export type PlatformValue = string;
 
-export type ProductTypeValue = 'followers' | 'likes';
+export type ProductTypeValue = string;
 
 export type OrderStatusValue =
     | 'pending'
@@ -26,7 +26,9 @@ export type PriceTier = {
 export type Product = {
     id: number;
     type: ProductTypeValue;
+    type_name?: string | null;
     platform: PlatformValue;
+    platform_name?: string | null;
     title: string;
     description: string | null;
     min_quantity: number;
@@ -35,6 +37,16 @@ export type Product = {
     base_price: number;
     prices?: PriceTier[];
     is_active?: boolean;
+};
+
+/** A dynamic product taxonomy row (platform or service type). */
+export type TaxonomyTerm = {
+    id: number;
+    slug: string;
+    name: string;
+    is_active: boolean;
+    sort_order: number;
+    products_count: number;
 };
 
 export type OrderUser = {

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\Auth\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Main\CheckoutController;
 use App\Http\Controllers\Main\LandingController;
@@ -105,6 +106,14 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::put('/products/{product}', [AdminProductController::class, 'update'])->name('products.update');
         Route::patch('/products/{product}/toggle', [AdminProductController::class, 'toggle'])->name('products.toggle');
         Route::delete('/products/{product}', [AdminProductController::class, 'destroy'])->name('products.destroy');
+
+        Route::get('/settings/taxonomies', [AdminSettingsController::class, 'index'])->name('settings.taxonomies.index');
+        Route::post('/settings/platforms', [AdminSettingsController::class, 'storePlatform'])->name('settings.platforms.store');
+        Route::put('/settings/platforms/{platform}', [AdminSettingsController::class, 'updatePlatform'])->name('settings.platforms.update');
+        Route::patch('/settings/platforms/{platform}/toggle', [AdminSettingsController::class, 'togglePlatform'])->name('settings.platforms.toggle');
+        Route::post('/settings/types', [AdminSettingsController::class, 'storeType'])->name('settings.types.store');
+        Route::put('/settings/types/{type}', [AdminSettingsController::class, 'updateType'])->name('settings.types.update');
+        Route::patch('/settings/types/{type}/toggle', [AdminSettingsController::class, 'toggleType'])->name('settings.types.toggle');
 
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');

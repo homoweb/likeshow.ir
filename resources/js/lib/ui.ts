@@ -3,7 +3,6 @@ import type {
     PaymentStatusValue,
     PaymentTxnStatusValue,
     Product,
-    ProductTypeValue,
 } from '@/types/likeshow';
 
 const faNumber = new Intl.NumberFormat('fa-IR');
@@ -22,11 +21,6 @@ export const formatDate = (iso: string | null | undefined): string => {
         dateStyle: 'medium',
         timeStyle: 'short',
     }).format(new Date(iso));
-};
-
-export const PRODUCT_TYPE_LABELS: Record<ProductTypeValue, string> = {
-    followers: 'فالوور',
-    likes: 'لایک',
 };
 
 export const ORDER_STATUS_LABELS: Record<OrderStatusValue, string> = {

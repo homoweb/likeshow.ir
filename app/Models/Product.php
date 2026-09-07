@@ -2,18 +2,19 @@
 
 namespace App\Models;
 
-use App\Enums\Platform;
-use App\Enums\ProductType;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
- * @property ProductType $type
- * @property Platform $platform
+ * @property int|null $product_platform_id
+ * @property int|null $product_type_id
+ * @property ProductPlatform|null $platform
+ * @property ProductType|null $type
  * @property string $title
  * @property string|null $description
  * @property int $min_quantity
@@ -24,8 +25,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $sort_order
  */
 #[Fillable([
-    'type',
-    'platform',
+    'product_platform_id',
+    'product_type_id',
     'title',
     'description',
     'min_quantity',
@@ -39,6 +40,26 @@ class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
     use HasFactory;
+
+    /**
+     * The platform taxonomy row this product belongs to.
+     *
+     * @return BelongsTo<ProductPlatform, $this>
+     */
+    public function platform(): BelongsTo
+    {
+        return $this->belongsTo(ProductPlatform::class, 'product_platform_id');
+    }
+
+    /**
+     * The service-type taxonomy row this product belongs to.
+     *
+     * @return BelongsTo<ProductType, $this>
+     */
+    public function type(): BelongsTo
+    {
+        return $this->belongsTo(ProductType::class, 'product_type_id');
+    }
 
     /**
      * Tiered pricing rules ordered from the cheapest tier.
@@ -85,8 +106,6 @@ class Product extends Model
     protected function casts(): array
     {
         return [
-            'type' => ProductType::class,
-            'platform' => Platform::class,
             'is_active' => 'boolean',
         ];
     }

@@ -4,7 +4,6 @@ import { computed } from 'vue';
 import AppLayout from '@/components/AppLayout.vue';
 import AppSpinner from '@/components/AppSpinner.vue';
 import {
-    PRODUCT_TYPE_LABELS,
     totalPriceFor,
     toFa,
     unitPriceFor,
@@ -71,7 +70,8 @@ const submit = (): void => {
                 ثبت سفارش {{ product.title }}
             </h1>
             <p class="mt-1 text-sm text-slate-400">
-                اینستاگرام · {{ PRODUCT_TYPE_LABELS[product.type] }}
+                {{ product.platform_name ?? product.platform }} ·
+                {{ product.type_name ?? product.type }}
             </p>
 
             <form
@@ -110,7 +110,7 @@ const submit = (): void => {
                         for="quantity"
                         class="mb-2 block text-sm font-medium text-slate-200"
                     >
-                        تعداد ({{ PRODUCT_TYPE_LABELS[product.type] }})
+                        تعداد ({{ product.type_name ?? product.type }})
                     </label>
                     <div class="flex items-center gap-2">
                         <button

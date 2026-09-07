@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\Platform;
-use App\Enums\ProductType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use App\Models\ProductPlatform;
+use App\Models\ProductType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -23,7 +23,7 @@ class ProductController extends Controller
     {
         $products = Product::query()
             ->orderBy('sort_order')
-            ->with('prices')
+            ->with(['prices', 'platform', 'type'])
             ->get();
 
         return Inertia::render('Admin/Products/Index', [
@@ -63,7 +63,7 @@ class ProductController extends Controller
     public function edit(Product $product): Response
     {
         return Inertia::render('Admin/Products/Edit', [
-            'product' => (new ProductResource($product->load('prices')))->resolve(),
+            'product' => (new ProductResource($product->load(['prices', 'platform', 'type'])))->resolve(),
             'platforms' => $this->platformOptions(),
             'types' => $this->typeOptions(),
         ]);
@@ -120,8 +120,8 @@ class ProductController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:2000'],
-            'platform' => ['required', 'string', Rule::in(collect(Platform::cases())->pluck('value'))],
-            'type' => ['required', 'string', Rule::in(collect(ProductType::cases())->pluck('value'))],
+            'platform' => ['required', 'string', 'max:32', Rule::exists('product_platforms', 'slug')],
+            'type' => ['required', 'string', 'max:32', Rule::exists('product_types', 'slug')],
             'min_quantity' => ['required', 'integer', 'min:1'],
             'max_quantity' => ['required', 'integer', 'gte:min_quantity'],
             'step_quantity' => ['required', 'integer', 'min:1'],
@@ -135,11 +135,18 @@ class ProductController extends Controller
         ], [
             'title.required' => 'عنوان محصول الزامی است.',
             'base_price.required' => 'قیمت پایه الزامی است.',
+            'platform.required' => 'انتخاب پلتفرم الزامی است.',
+            'platform.exists' => 'پلتفرم انتخابی معتبر نیست.',
+            'type.required' => 'انتخاب نوع سرویس الزامی است.',
+            'type.exists' => 'نوع سرویس انتخابی معتبر نیست.',
         ]);
 
+        $platform = ProductPlatform::query()->where('slug', $validated['platform'])->firstOrFail();
+        $type = ProductType::query()->where('slug', $validated['type'])->firstOrFail();
+
         $taken = Product::query()
-            ->where('platform', $validated['platform'])
-            ->where('type', $validated['type'])
+            ->where('product_platform_id', $platform->getKey())
+            ->where('product_type_id', $type->getKey())
             ->when($product !== null, fn ($query) => $query->whereKeyNot($product->getKey()))
             ->exists();
 
@@ -148,6 +155,11 @@ class ProductController extends Controller
                 'platform' => 'برای این پلتفرم و نوع محصول قبلاً محصولی ثبت شده است.',
             ]);
         }
+
+        $validated['product_platform_id'] = $platform->getKey();
+        $validated['product_type_id'] = $type->getKey();
+
+        unset($validated['platform'], $validated['type']);
 
         return $validated;
     }
@@ -169,27 +181,39 @@ class ProductController extends Controller
     }
 
     /**
+     * Active platform options for the product form dropdowns.
+     *
      * @return array<int, array{value: string, label: string}>
      */
     private function platformOptions(): array
     {
-        return collect(Platform::cases())
-            ->map(fn (Platform $platform): array => [
-                'value' => $platform->value,
-                'label' => $platform->label(),
+        return ProductPlatform::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get()
+            ->map(fn (ProductPlatform $platform): array => [
+                'value' => $platform->slug,
+                'label' => $platform->name,
             ])
             ->all();
     }
 
     /**
+     * Active service type options for the product form dropdowns.
+     *
      * @return array<int, array{value: string, label: string}>
      */
     private function typeOptions(): array
     {
-        return collect(ProductType::cases())
+        return ProductType::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get()
             ->map(fn (ProductType $type): array => [
-                'value' => $type->value,
-                'label' => $type->label(),
+                'value' => $type->slug,
+                'label' => $type->name,
             ])
             ->all();
     }

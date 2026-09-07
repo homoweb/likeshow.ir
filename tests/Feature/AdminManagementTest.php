@@ -2,6 +2,8 @@
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductPlatform;
+use App\Models\ProductType;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Support\Facades\Hash;
@@ -12,6 +14,108 @@ beforeEach(function () {
 
     $this->admin = User::factory()->admin()->create();
     $this->be($this->admin);
+});
+
+test('admins can manage product platforms and service types dynamically', function () {
+    // The taxonomy screen lists the seeded defaults.
+    $this->get('https://likeshow.test/admin/settings/taxonomies')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Settings/Taxonomies')
+            ->has('platforms', 1)
+            ->has('types', 2));
+
+    // A new platform immediately appears in the product form options.
+    $this->post('https://likeshow.test/admin/settings/platforms', [
+        'slug' => 'telegram',
+        'name' => 'تلگرام',
+        'sort_order' => 2,
+    ])->assertRedirect()->assertSessionHas('success');
+
+    $this->post('https://likeshow.test/admin/settings/types', [
+        'slug' => 'views',
+        'name' => 'بازدید',
+        'sort_order' => 3,
+    ])->assertRedirect()->assertSessionHas('success');
+
+    $telegram = ProductPlatform::query()->where('slug', 'telegram')->firstOrFail();
+    $views = ProductType::query()->where('slug', 'views')->firstOrFail();
+
+    $this->get('https://likeshow.test/admin/products/create')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Products/Create')
+            ->where('platforms.1.value', 'telegram')
+            ->where('types.2.value', 'views'));
+
+    // Duplicate slugs and names are rejected for both taxonomies.
+    $this->post('https://likeshow.test/admin/settings/platforms', [
+        'slug' => 'telegram',
+        'name' => 'تلگرام',
+    ])->assertSessionHasErrors(['slug']);
+
+    $this->post('https://likeshow.test/admin/settings/types', [
+        'slug' => 'followers',
+        'name' => 'تازه',
+    ])->assertSessionHasErrors(['slug']);
+
+    // A product can now be created for the new platform + type pair.
+    $payload = [
+        'title' => 'بازدید تلگرام',
+        'platform' => 'telegram',
+        'type' => 'views',
+        'min_quantity' => 1000,
+        'max_quantity' => 100000,
+        'step_quantity' => 1000,
+        'base_price' => 50000,
+        'is_active' => true,
+    ];
+
+    $this->post('https://likeshow.test/admin/products', $payload)
+        ->assertRedirect()->assertSessionHas('success');
+
+    $product = Product::query()->where('title', 'بازدید تلگرام')->firstOrFail();
+    expect($product->product_platform_id)->toBe($telegram->id)
+        ->and($product->product_type_id)->toBe($views->id)
+        ->and($product->platform?->name)->toBe('تلگرام')
+        ->and($product->type?->name)->toBe('بازدید');
+
+    // Taxonomy rows can be renamed, and the change flows into the product.
+    $this->put('https://likeshow.test/admin/settings/platforms/'.$telegram->id, [
+        'slug' => 'telegram',
+        'name' => 'تلگرام فارسی',
+    ])->assertRedirect()->assertSessionHas('success');
+
+    expect($product->refresh()->platform?->name)->toBe('تلگرام فارسی');
+
+    // Deactivating a platform removes it from the product form options,
+    // but existing products keep working.
+    $this->patch('https://likeshow.test/admin/settings/platforms/'.$telegram->id.'/toggle')
+        ->assertRedirect()->assertSessionHas('success');
+
+    expect($telegram->refresh()->is_active)->toBeFalse()
+        ->and($product->refresh()->platform->is_active)->toBeFalse();
+
+    $this->get('https://likeshow.test/admin/products/create')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Products/Create')
+            ->has('platforms', 1));
+});
+
+test('product forms reject taxonomy slugs that do not exist', function () {
+    $this->post('https://likeshow.test/admin/products', [
+        'title' => 'محصول نامعتبر',
+        'platform' => 'tiktok',
+        'type' => 'followers',
+        'min_quantity' => 1000,
+        'max_quantity' => 100000,
+        'step_quantity' => 1000,
+        'base_price' => 50000,
+        'is_active' => true,
+    ])->assertSessionHasErrors(['platform']);
+
+    expect(Product::query()->where('title', 'محصول نامعتبر')->exists())->toBeFalse();
 });
 
 test('admins can list, create, toggle and delete users', function () {

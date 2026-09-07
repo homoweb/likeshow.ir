@@ -4,7 +4,6 @@ import { computed, ref, watch } from 'vue';
 import AppLayout from '@/components/AppLayout.vue';
 import AppLink from '@/components/AppLink.vue';
 import {
-    PRODUCT_TYPE_LABELS,
     formatPrice,
     toFa,
     totalPriceFor,
@@ -340,7 +339,8 @@ const faq = [
                         <span
                             class="rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-300 ring-1 ring-indigo-500/30 ring-inset"
                         >
-                            {{ PRODUCT_TYPE_LABELS[product.type] }} اینستاگرام
+                            {{ product.type_name ?? product.type }}
+                            {{ product.platform_name ?? product.platform }}
                         </span>
                         <h3 class="mt-4 text-lg font-bold text-white">
                             {{ product.title }}

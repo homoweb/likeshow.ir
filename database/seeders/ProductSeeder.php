@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Enums\Platform;
-use App\Enums\ProductType;
 use App\Models\Product;
+use App\Models\ProductPlatform;
+use App\Models\ProductType;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
@@ -14,10 +14,14 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
+        $instagram = ProductPlatform::query()->where('slug', 'instagram')->firstOrFail();
+        $followers = ProductType::query()->where('slug', 'followers')->firstOrFail();
+        $likes = ProductType::query()->where('slug', 'likes')->firstOrFail();
+
         $products = [
             [
-                'platform' => Platform::Instagram,
-                'type' => ProductType::Followers,
+                'product_platform_id' => $instagram->getKey(),
+                'product_type_id' => $followers->getKey(),
                 'title' => 'فالوور اینستاگرام',
                 'description' => 'افزایش فالوور واقعی و باکیفیت پیج اینستاگرام شما',
                 'min_quantity' => 1000,
@@ -31,8 +35,8 @@ class ProductSeeder extends Seeder
                 ],
             ],
             [
-                'platform' => Platform::Instagram,
-                'type' => ProductType::Likes,
+                'product_platform_id' => $instagram->getKey(),
+                'product_type_id' => $likes->getKey(),
                 'title' => 'لایک اینستاگرام',
                 'description' => 'افزایش لایک پست‌های پیج اینستاگرام شما',
                 'min_quantity' => 1000,
@@ -52,8 +56,8 @@ class ProductSeeder extends Seeder
             unset($data['tiers']);
 
             $product = Product::query()->updateOrCreate([
-                'platform' => $data['platform'],
-                'type' => $data['type'],
+                'product_platform_id' => $data['product_platform_id'],
+                'product_type_id' => $data['product_type_id'],
             ], [
                 ...$data,
                 'is_active' => true,

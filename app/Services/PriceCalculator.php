@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\ProductType;
 use App\Exceptions\CheckoutException;
 use App\Models\Product;
 
@@ -65,9 +64,7 @@ final class PriceCalculator
      */
     public function describe(Product $product, int $quantity): string
     {
-        $type = $product->type === ProductType::Likes ? 'لایک' : 'فالوور';
-
-        return number_format($quantity).' '.$type.' '.
-            ($product->platform->label() ?? '');
+        return number_format($quantity).' '.($product->type?->name ?? '').' '.
+            ($product->platform?->name ?? '');
     }
 }

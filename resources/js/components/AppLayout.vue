@@ -7,6 +7,7 @@ import { toFa } from '@/lib/ui';
 import adminRoutes from '@/routes/admin';
 import adminOrders from '@/routes/admin/orders';
 import adminProducts from '@/routes/admin/products';
+import adminSettings from '@/routes/admin/settings';
 import adminUsers from '@/routes/admin/users';
 import mainRoutes from '@/routes/main';
 import panelRoutes from '@/routes/panel';
@@ -125,6 +126,7 @@ const adminNav = computed(() => [
     { href: adminUsers.index.url(), label: 'کاربران' },
     { href: adminProducts.index.url(), label: 'محصولات' },
     { href: adminOrders.index.url(), label: 'سفارش‌ها' },
+    { href: adminSettings.taxonomies.index.url(), label: 'تنظیمات' },
 ]);
 
 /**

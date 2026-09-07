@@ -4,7 +4,7 @@ import { ref } from 'vue';
 import AppLayout from '@/components/AppLayout.vue';
 import AppLink from '@/components/AppLink.vue';
 import AppSpinner from '@/components/AppSpinner.vue';
-import { PRODUCT_TYPE_LABELS, toFa } from '@/lib/ui';
+import { toFa } from '@/lib/ui';
 import adminProducts from '@/routes/admin/products';
 import type { Product } from '@/types/likeshow';
 
@@ -74,7 +74,8 @@ const destroy = (product: Product): void => {
                             {{ product.title }}
                         </td>
                         <td class="px-4 py-3 text-slate-300">
-                            اینستاگرام · {{ PRODUCT_TYPE_LABELS[product.type] }}
+                            {{ product.platform_name }} ·
+                            {{ product.type_name }}
                         </td>
                         <td class="px-4 py-3 text-slate-300">
                             {{ toFa(product.base_price) }} تومان

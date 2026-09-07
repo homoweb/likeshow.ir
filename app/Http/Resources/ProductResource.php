@@ -20,8 +20,10 @@ class ProductResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'type' => $this->type,
-            'platform' => $this->platform,
+            'type' => $this->type?->slug,
+            'type_name' => $this->type?->name,
+            'platform' => $this->platform?->slug,
+            'platform_name' => $this->platform?->name,
             'title' => $this->title,
             'description' => $this->description,
             'min_quantity' => $this->min_quantity,

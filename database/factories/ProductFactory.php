@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Enums\Platform;
-use App\Enums\ProductType;
 use App\Models\Product;
+use App\Models\ProductPlatform;
+use App\Models\ProductType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,12 +19,10 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
-        $type = fake()->randomElement(ProductType::cases());
-
         return [
-            'type' => $type,
-            'platform' => Platform::Instagram,
-            'title' => $type->label().' اینستاگرام',
+            'product_platform_id' => ProductPlatform::query()->where('slug', 'instagram')->firstOrFail()->getKey(),
+            'product_type_id' => ProductType::query()->inRandomOrder()->firstOrFail()->getKey(),
+            'title' => fake()->sentence(),
             'description' => fake()->sentence(),
             'min_quantity' => 1000,
             'max_quantity' => 1000000,
@@ -40,9 +38,9 @@ class ProductFactory extends Factory
      */
     public function followers(): static
     {
-        return $this->state(fn () => [
-            'type' => ProductType::Followers,
-            'platform' => Platform::Instagram,
+        return $this->state(fn (): array => [
+            'product_platform_id' => ProductPlatform::query()->where('slug', 'instagram')->firstOrFail()->getKey(),
+            'product_type_id' => ProductType::query()->where('slug', 'followers')->firstOrFail()->getKey(),
             'title' => 'فالوور اینستاگرام',
         ]);
     }
@@ -52,9 +50,9 @@ class ProductFactory extends Factory
      */
     public function likes(): static
     {
-        return $this->state(fn () => [
-            'type' => ProductType::Likes,
-            'platform' => Platform::Instagram,
+        return $this->state(fn (): array => [
+            'product_platform_id' => ProductPlatform::query()->where('slug', 'instagram')->firstOrFail()->getKey(),
+            'product_type_id' => ProductType::query()->where('slug', 'likes')->firstOrFail()->getKey(),
             'title' => 'لایک اینستاگرام',
         ]);
     }
@@ -64,7 +62,7 @@ class ProductFactory extends Factory
      */
     public function inactive(): static
     {
-        return $this->state(fn () => [
+        return $this->state(fn (): array => [
             'is_active' => false,
         ]);
     }

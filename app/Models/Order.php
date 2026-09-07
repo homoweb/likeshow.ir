@@ -4,8 +4,6 @@ namespace App\Models;
 
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
-use App\Enums\Platform;
-use App\Enums\ProductType;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,8 +17,10 @@ use Illuminate\Support\Carbon;
  * @property string $order_number
  * @property int|null $user_id
  * @property int $product_id
- * @property ProductType $product_type
- * @property Platform $product_platform
+ * @property int|null $product_platform_id
+ * @property int|null $product_type_id
+ * @property ProductPlatform|null $platform
+ * @property ProductType|null $type
  * @property string $product_title
  * @property string $target_username
  * @property int $quantity
@@ -36,8 +36,8 @@ use Illuminate\Support\Carbon;
     'order_number',
     'user_id',
     'product_id',
-    'product_type',
-    'product_platform',
+    'product_platform_id',
+    'product_type_id',
     'product_title',
     'target_username',
     'quantity',
@@ -69,6 +69,26 @@ class Order extends Model
     }
 
     /**
+     * The platform snapshot of the purchased product.
+     *
+     * @return BelongsTo<ProductPlatform, $this>
+     */
+    public function platform(): BelongsTo
+    {
+        return $this->belongsTo(ProductPlatform::class, 'product_platform_id');
+    }
+
+    /**
+     * The service-type snapshot of the purchased product.
+     *
+     * @return BelongsTo<ProductType, $this>
+     */
+    public function type(): BelongsTo
+    {
+        return $this->belongsTo(ProductType::class, 'product_type_id');
+    }
+
+    /**
      * @return HasMany<Payment, $this>
      */
     public function payments(): HasMany
@@ -84,8 +104,6 @@ class Order extends Model
     protected function casts(): array
     {
         return [
-            'product_type' => ProductType::class,
-            'product_platform' => Platform::class,
             'status' => OrderStatus::class,
             'payment_status' => PaymentStatus::class,
             'paid_at' => 'datetime',

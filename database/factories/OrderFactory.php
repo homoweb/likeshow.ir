@@ -29,8 +29,6 @@ class OrderFactory extends Factory
             'order_number' => 'FB-'.now()->format('ymd').'-'.Str::upper(Str::random(5)),
             'user_id' => User::factory(),
             'product_id' => Product::factory(),
-            'product_type' => 'followers',
-            'product_platform' => 'instagram',
             'product_title' => 'فالوور اینستاگرام',
             'target_username' => fake()->userName(),
             'quantity' => $quantity,
@@ -39,6 +37,19 @@ class OrderFactory extends Factory
             'status' => OrderStatus::Pending,
             'payment_status' => PaymentStatus::Unpaid,
         ];
+    }
+
+    /**
+     * Mirror the purchased product's taxonomy into the snapshot columns.
+     */
+    public function configure(): static
+    {
+        return $this->afterCreating(function (Order $order): void {
+            $order->forceFill([
+                'product_platform_id' => $order->product->product_platform_id,
+                'product_type_id' => $order->product->product_type_id,
+            ])->save();
+        });
     }
 
     /**
