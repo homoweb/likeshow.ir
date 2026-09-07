@@ -62,4 +62,17 @@ return [
     */
 
     'currency' => Env::get('LS_CURRENCY', 'IRT'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Security
+    |--------------------------------------------------------------------------
+    |
+    | Origins allowed to embed the site in an iframe (CSP frame-ancestors).
+    | eNAMAD displays the site inside an iframe on its verification page, so
+    | its seal origins must be allowed; every other origin stays blocked.
+    |
+    */
+
+    'frame_ancestors' => Env::get('LS_FRAME_ANCESTORS', 'https://*.enamad.ir,https://enamad.ir'),
 ];
