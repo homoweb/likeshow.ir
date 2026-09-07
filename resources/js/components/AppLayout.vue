@@ -367,11 +367,11 @@ const isActiveAdminNav = (href: string): boolean => {
                             </li>
                             <li>
                                 <a
-                                    href="mailto:support@likeshow.ir"
+                                    href="mailto:likeshow.ir@gmail.com"
                                     dir="ltr"
                                     class="transition hover:text-white"
                                 >
-                                    support@likeshow.ir
+                                    likeshow.ir@gmail.com
                                 </a>
                             </li>
                             <li>پاسخگویی: همه‌روزه ۹ تا ۲۴</li>
