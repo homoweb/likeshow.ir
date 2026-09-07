@@ -383,7 +383,10 @@ const isActiveAdminNav = (href: string): boolean => {
                     class="mt-10 flex flex-col items-center justify-between gap-6 border-t border-white/5 pt-6 text-xs text-slate-500 md:flex-row"
                 >
                     <div>© {{ year }} لایک شو — تمامی حقوق محفوظ است.</div>
-                    <a referrerpolicy='origin' target='_blank' href='https://trustseal.enamad.ir/?id=7617460&Code=hF5UEFjsxxRidiFDQgRZo2WXOmUFlyvF'><img referrerpolicy='origin' src='https://trustseal.enamad.ir/logo.aspx?id=7617460&Code=hF5UEFjsxxRidiFDQgRZo2WXOmUFlyvF' alt='' style='cursor:pointer' code='hF5UEFjsxxRidiFDQgRZo2WXOmUFlyvF'></a>
+                    <!-- Official eNAMAD snippet (kept verbatim for eNAMAD's crawler).
+                         Hidden on load failure until the seal is issued for this domain,
+                         so visitors don't see a broken-image icon. -->
+                    <a referrerpolicy='origin' target='_blank' href='https://trustseal.enamad.ir/?id=7617460&Code=hF5UEFjsxxRidiFDQgRZo2WXOmUFlyvF'><img referrerpolicy='origin' src='https://trustseal.enamad.ir/logo.aspx?id=7617460&Code=hF5UEFjsxxRidiFDQgRZo2WXOmUFlyvF' alt='' style='cursor:pointer' code='hF5UEFjsxxRidiFDQgRZo2WXOmUFlyvF' @error='($event.target as HTMLImageElement).style.display = "none"'></a>
                 </div>
             </div>
         </footer>
