@@ -56,12 +56,27 @@ class PaymentController extends Controller
         } catch (PurchaseFailedException|InvalidPaymentException $e) {
             return redirect()
                 ->route('main.payment.review', $order)
-                ->with('error', $e->getMessage() ?: 'خطا در ارتباط با درگاه پرداخت. لطفاً دوباره تلاش کنید.');
+                ->with('error', $this->purchaseErrorMessage($e));
         }
 
         $request->session()->put("payable_orders.{$order->id}", true);
 
         return response($this->paymentService->redirectionFormOf($payment)->render());
+    }
+
+    /**
+     * Turn a gateway purchase failure into a message the customer can act
+     * on. Zibal's driver puts its numeric result code in the exception code
+     * but maps unknown codes (e.g. 115, the IP-whitelist rejection) to a
+     * generic message, so the actionable codes are translated here.
+     */
+    private function purchaseErrorMessage(PurchaseFailedException|InvalidPaymentException $e): string
+    {
+        if ($e->getCode() === 115) {
+            return 'پرداخت در حال حاضر غیرفعال است (خطای IP درگاه زیبال). لطفاً از طریق پشتیبانی اطلاع دهید.';
+        }
+
+        return $e->getMessage() ?: 'خطا در ارتباط با درگاه پرداخت. لطفاً دوباره تلاش کنید.';
     }
 
     /**

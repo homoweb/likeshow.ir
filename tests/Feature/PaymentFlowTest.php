@@ -185,6 +185,40 @@ test('a failed gateway purchase returns to the review page with an error and sta
     $this->post('https://likeshow.test/payment/start/'.$order->id)->assertOk();
 });
 
+test('a zibal IP-whitelist rejection surfaces actionable guidance', function () {
+    config(['payment.default' => 'zibal']);
+
+    $manager = zibalManager();
+    // Zibal reports an unwhitelisted server IP as result 115, which the
+    // shared driver maps to its generic unknown-error message; the code
+    // must still translate it into guidance the merchant can act on.
+    $manager->purchaseBehavior = fn (?Invoice $invoice) => throw new PurchaseFailedException(
+        'خطای ناشناخته ای رخ داده است.',
+        115,
+    );
+    bindPaymentManager($manager);
+
+    $user = User::factory()->create();
+    $product = Product::factory()->followers()->withTiers()->create();
+
+    $order = Order::factory()->for($user)->for($product)->create([
+        'quantity' => 5000,
+        'unit_price' => 120,
+        'total_price' => 600,
+    ]);
+
+    $response = $this->actingAs($user)
+        ->post('https://likeshow.test/payment/start/'.$order->id);
+
+    $response->assertRedirect(route('main.payment.review', $order))
+        ->assertSessionHas('error');
+
+    expect($response->getSession()->get('error'))->toContain('IP')
+        ->toContain('زیبال');
+
+    expect(Payment::query()->where('order_id', $order->id)->count())->toBe(0);
+});
+
 test('an unpaid zibal callback fails the payment instead of erroring', function () {
     config(['payment.default' => 'zibal']);
 
