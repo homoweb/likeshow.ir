@@ -383,21 +383,7 @@ const isActiveAdminNav = (href: string): boolean => {
                     class="mt-10 flex flex-col items-center justify-between gap-6 border-t border-white/5 pt-6 text-xs text-slate-500 md:flex-row"
                 >
                     <div>© {{ year }} لایک شو — تمامی حقوق محفوظ است.</div>
-                    <a
-                        referrerpolicy="origin"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        href="https://trustseal.enamad.ir/?id=7617460&Code=hF5UEFjsxxRidiFDQgRZo2WXOmUFlyvF"
-                    >
-                        <img
-                            referrerpolicy="origin"
-                            src="https://trustseal.enamad.ir/logo.aspx?id=7617460&Code=hF5UEFjsxxRidiFDQgRZo2WXOmUFlyvF"
-                            alt="نماد اعتماد الکترونیکی"
-                            code="hF5UEFjsxxRidiFDQgRZo2WXOmUFlyvF"
-                            class="rounded-lg opacity-90 transition hover:opacity-100"
-                            style="cursor: pointer"
-                        />
-                    </a>
+                    <a referrerpolicy='origin' target='_blank' href='https://trustseal.enamad.ir/?id=7617460&Code=hF5UEFjsxxRidiFDQgRZo2WXOmUFlyvF'><img referrerpolicy='origin' src='https://trustseal.enamad.ir/logo.aspx?id=7617460&Code=hF5UEFjsxxRidiFDQgRZo2WXOmUFlyvF' alt='' style='cursor:pointer' code='hF5UEFjsxxRidiFDQgRZo2WXOmUFlyvF'></a>
                 </div>
             </div>
         </footer>

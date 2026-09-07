@@ -12,6 +12,7 @@
 |
 */
 
+use Shetabit\Multipay\Constants\IranCurrency;
 use Shetabit\Multipay\Drivers\Local\Local;
 use Shetabit\Multipay\Drivers\Zarinpal\Zarinpal;
 
@@ -47,8 +48,11 @@ return [
             'merchantId' => env('ZARINPAL_MERCHANT_ID'),
             'callbackUrl' => env('PAYMENT_CALLBACK_URL', $mainUrl.'/payment/callback'),
             'description' => 'پرداخت سفارش لایک شو',
-            'mode' => 'normal',
-            'currency' => 'TOMAN',
+            // sandbox = sandbox.zarinpal.com (test merchant), normal = live gateway
+            'mode' => env('ZARINPAL_MODE', 'normal'),
+            // Prices in this app are IRT; the driver multiplies by the ratio
+            // and sends the rial amount to the gateway. Must be the enum.
+            'currency' => IranCurrency::TOMAN,
         ],
     ],
 

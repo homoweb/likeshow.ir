@@ -4,9 +4,21 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
+use Shetabit\Multipay\Constants\IranCurrency;
 
 beforeEach(function () {
     config(['payment.default' => 'local']);
+});
+
+test('the zarinpal driver configuration is gateway-compatible', function () {
+    $settings = config('payment.drivers.zarinpal');
+
+    // The driver multiplies the toman amount by `$currency->ratio()`; a
+    // string instead of the enum crashes the purchase with a fatal error.
+    expect($settings['currency'])->toBeInstanceOf(IranCurrency::class)
+        ->and($settings['currency']->ratio())->toBe(10)
+        ->and($settings['mode'])->toBe('normal')
+        ->and($settings['callbackUrl'])->toEndWith('/payment/callback');
 });
 
 test('an order is fulfilled through the local gateway', function () {
