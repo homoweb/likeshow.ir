@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
+use Shetabit\Multipay\Exceptions\InvalidPaymentException;
+use Shetabit\Multipay\Exceptions\PurchaseFailedException;
 
 class PaymentController extends Controller
 {
@@ -43,13 +45,19 @@ class PaymentController extends Controller
      * (auto-submitting form for real gateways, the built-in fake gateway
      * page for the local driver).
      */
-    public function start(Request $request, Order $order): Response
+    public function start(Request $request, Order $order): Response|RedirectResponse
     {
         $this->authorizeOrder($request, $order);
 
         abort_unless($order->payment_status->value === 'unpaid', 404, 'این سفارش قابل پرداخت نیست.');
 
-        $payment = $this->paymentService->start($order);
+        try {
+            $payment = $this->paymentService->start($order);
+        } catch (PurchaseFailedException|InvalidPaymentException $e) {
+            return redirect()
+                ->route('main.payment.review', $order)
+                ->with('error', $e->getMessage() ?: 'خطا در ارتباط با درگاه پرداخت. لطفاً دوباره تلاش کنید.');
+        }
 
         $request->session()->put("payable_orders.{$order->id}", true);
 

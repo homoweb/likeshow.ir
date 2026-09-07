@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Shetabit\Multipay\Contracts\ReceiptInterface;
 use Shetabit\Multipay\Exceptions\InvalidPaymentException;
 use Shetabit\Multipay\Exceptions\PreviouslyVerifiedException;
+use Shetabit\Multipay\Exceptions\PurchaseFailedException;
 use Shetabit\Multipay\Invoice;
 use Shetabit\Multipay\Payment as PaymentManager;
 use Shetabit\Multipay\RedirectionForm;
@@ -127,7 +128,7 @@ final class PaymentService
             $this->orderService->markPaid($payment->order);
 
             return new PaymentResult(PaymentCallbackStatus::AlreadyVerified, $payment);
-        } catch (InvalidPaymentException $e) {
+        } catch (InvalidPaymentException|PurchaseFailedException $e) {
             $this->fail($payment, $e->getMessage());
 
             return new PaymentResult(PaymentCallbackStatus::Failed, $payment, $e->getMessage());
@@ -145,11 +146,12 @@ final class PaymentService
 
     /**
      * Find the pending payment row using whatever token the gateway sent
-     * back (local: transactionId, zarinpal: Authority).
+     * back (local: transactionId, zibal: trackId, zarinpal: Authority).
      */
     private function locatePayment(Request $request): ?Payment
     {
         $token = (string) ($request->input('transactionId')
+            ?? $request->input('trackId')
             ?? $request->input('Authority')
             ?? $request->input('authority')
             ?? $request->input('token')
